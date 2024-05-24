@@ -63,6 +63,19 @@ plink --bfile  GWA-QC-nohet --allow-no-sex --remove wrong_ibd.txt --make-bed --o
 
 
 
+**SNP QC**
+
+Run the --missing command again to generate the GWA-data.lmiss with the missing data rate for each SNP: 
+```sh
+plink --bfile GWA-QC-unique --missing --out GWA-QC-unique 
+```
+
+(We get the .imiss and .lmiss files).
+
+The --test-missing command tests for association between missingness and case/control status, using Fisher's exact test. It produces a file with ".missing" suffix.
+Run the test-missing command: plink --bfile GWA-QC-unique --allow-no-sex --test-missing --out GWA-QC-unique-missing
+Warning: Skipping --test-missing since at least one case and one control is required. At this point we need to add the phenotypes variable in eye_color.txt distinguishing the phenotypes related with the eye color. 
+
 
 
 
