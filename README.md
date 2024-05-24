@@ -39,10 +39,45 @@ We will create new bed, bim, fam files if we name the outpit differently or we w
 
 **Identification of duplicated or related individuals**
 We have to calculate the identity by descent (IBD). 
-1. We will “prune” the data and create a list of SNPs that are non-correlated. This can be done by the following command:
+
+We will “prune” the data and create a list of SNPs that are non-correlated. This can be done by the following command:
 ```sh
 plink --bfile GWA-QC-nohet --allow-no-sex --indep-pairwise 500kb 5 0.2 --out GWA-QC
 ```
+It saves the list of independent SNPs as .prune.in.  
+
+To calculate IBD between each pair of individuals:
+```sh
+plink --bfile GWA-QC-nohet --allow-no-sex --extract GWA-QC.prune.in --genome --min 0.185 --out GWA-QC-ibd
+```
+The --min 0.185 option means that it will only print the calculated IBD if it is above 0.185 (Mean between second-degree relatives:0.25 and third-degree relatives:0.125). This produces a file with the extions .genome 
+
+
+With Rstudio we should remove a member from each of the pairs that are too closely related from the data set. We will remove the individual mentioned first. 
+
+To remove these individuals that we have obtained in R we will use again the --remove parameter and create updated bed/bim/fam files with: 
+```sh
+plink --bfile  GWA-QC-nohet --allow-no-sex --remove wrong_ibd.txt --make-bed --out GWA-QC-unique 
+```
+(The updated files are going to be -unique).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
