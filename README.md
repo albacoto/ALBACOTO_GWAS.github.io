@@ -1,1 +1,3 @@
 # ALBACOTO_GWAS.github.io
+
+GWAS QC USING PLINK
