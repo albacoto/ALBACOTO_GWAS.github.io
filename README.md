@@ -10,7 +10,7 @@ also activate the conda environment which has PLINK downloaded. Note to perform 
 **GWAS QC USING PLINK**
 
 
-Identification of individuals with elevated missing data rates or outlying heterozygosity rate
+**Identification of individuals with elevated missing data rates or outlying heterozygosity rate**
 ```sh
 plink --bfile gwas_data --missing --out GWA-QC 
 ```
@@ -28,5 +28,23 @@ To be able to charge the file .imiss in R we need to have it in our own computer
 ```sh
 scp @login.genome.au.dk:/path/to/file .
 ```
+
+Inside R we should also filter out outliers for the variables, and then save the file so we later remove it using PLINK. We have made a file with the FID and IID of all individuals that have a genotype missing rate >=0.03 or a heterozygosity rate that is more than 3 s.d. from the mean (this is calculated in R). To remove this file using PLINK we should type:
+```sh
+plink --bfile gwas_data --remove wrong_het_missing_values.txt --make-bed --out GWA-QC-nohet
+```
+
+We will create new bed, bim, fam files if we name the outpit differently or we will overwrite the ones we already had if we don't change the output name.
+
+
+**Identification of duplicated or related individuals**
+We have to calculate the identity by descent (IBD). 
+1. We will “prune” the data and create a list of SNPs that are non-correlated. This can be done by the following command:
+```sh
+plink --bfile GWA-QC-nohet --allow-no-sex --indep-pairwise 500kb 5 0.2 --out GWA-QC
+```
+
+
+
 
 
