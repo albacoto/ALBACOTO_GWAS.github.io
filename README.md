@@ -39,6 +39,7 @@ We will create new bed, bim, fam files if we name the outpit differently or we w
 
 
 **Identification of duplicated or related individuals**
+
 We have to calculate the identity by descent (IBD). 
 
 We will “prune” the data and create a list of SNPs that are non-correlated. This can be done by the following command:
@@ -66,6 +67,8 @@ plink --bfile  GWA-QC-nohet --allow-no-sex --remove wrong_ibd.txt --make-bed --o
 
 **SNP QC**
 
+SNPs with an excessive missing data rate
+
 Run the --missing command again to generate the GWA-data.lmiss with the missing data rate for each SNP: 
 ```sh
 plink --bfile GWA-QC-unique --missing --out GWA-QC-unique 
@@ -76,6 +79,19 @@ plink --bfile GWA-QC-unique --missing --out GWA-QC-unique
 The --test-missing command tests for association between missingness and case/control status, using Fisher's exact test. It produces a file with ".missing" suffix.
 Run the test-missing command: plink --bfile GWA-QC-unique --allow-no-sex --test-missing --out GWA-QC-unique-missing
 Warning: Skipping --test-missing since at least one case and one control is required. At this point we need to add the phenotypes variable in eye_color.txt distinguishing the phenotypes related with the eye color. 
+
+
+**PCA**
+
+We will use the pruned set of SNPs to calculate the relationship matrix and calculate the first 20 principle components (PCs): 
+```sh
+plink --bfile GWA-QC-unique --extract GWA-QC.prune.in --pca 20 --out gwa-pca
+```
+This calculates the eigenvalues and the eigenvectors, and stores them in two files (.eigenval, .eigenvec).
+
+Load gwa.eigenvec into R and make a plot with the first PC on the x-axis and the second PC on the y-axis. In R we load the eigenvec data, but we have to name the columns properly, since we have 22 columns, and we performed the plink so that we would obtain a PCA of 20 we know that the first 2 columns are going to be the identifiers. 
+
+
 
 
 
