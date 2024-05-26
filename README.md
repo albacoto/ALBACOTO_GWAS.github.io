@@ -69,7 +69,7 @@ With Rstudio we should remove a member from each of the pairs that are too close
 
 To remove these individuals that we have obtained in R we will use again the --remove parameter and create updated or new bed/bim/fam files with the same command as before: 
 ```sh
-plink --bfile  GWAS-QC2 --allow-no-sex --remove wrong_ibd.txt --make-bed --out GWA-QC3 
+plink --bfile  GWAS-QC2 --remove ibd_filtered.txt --make-bed --out GWA-QC3 
 ```
 
 
