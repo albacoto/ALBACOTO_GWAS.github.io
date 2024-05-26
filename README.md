@@ -62,16 +62,15 @@ We obtain .prune.in and prune.out files. In the .prune.it we have the list of in
 ```sh
 plink --bfile GWAS-QC2 --allow-no-sex --extract GWAS-QC2.prune.in --genome --min 0.185 --out GWAS-QC2
 ```
-The --min 0.185 option means that it will only print the calculated IBD if it is above 0.185 (Mean between second-degree relatives:0.25 and third-degree relatives:0.125). This produces a file with the extions .genome 
+The --min 0.185 option means that it will only print the calculated IBD if it is above 0.185 (Mean between second-degree relatives:0.25 and third-degree relatives:0.125). This produces a file with the extention .genome.
 
 
 With Rstudio we should remove a member from each of the pairs that are too closely related from the data set. We will remove the individual mentioned first. 
 
-To remove these individuals that we have obtained in R we will use again the --remove parameter and create updated bed/bim/fam files with: 
+To remove these individuals that we have obtained in R we will use again the --remove parameter and create updated or new bed/bim/fam files with the same command as before: 
 ```sh
-plink --bfile  GWA-QC-nohet --allow-no-sex --remove wrong_ibd.txt --make-bed --out GWA-QC-unique 
+plink --bfile  GWAS-QC2 --allow-no-sex --remove wrong_ibd.txt --make-bed --out GWA-QC3 
 ```
-(The updated files are going to be -unique).
 
 
 
