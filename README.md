@@ -25,7 +25,7 @@ This command will create the file GWA-data.het, in which the third column denote
 
 We than open R to create a plot in which the observed heterozygosity rate per individual is plotted on the x axis and the proportion of missing SNPs per individuals is plotted on the y axis. To calculate the observed heterozygosity rate per individual we should do it using the formula: Het = (N(NM) − O(Hom))/N(NM). 
 
-To be able to charge the file .imiss in R we need to have it in our own computer, we obtain it from GenomeDK like this:
+Note: To be able to charge the file .imiss and .het in R we need to have it in our own computer, we obtain it from the cluster like this:
 ```sh
 scp @login.genome.au.dk:/path/to/file .
 ```
