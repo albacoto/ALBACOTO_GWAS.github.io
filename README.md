@@ -46,7 +46,7 @@ To remove this file using PLINK we should type:
 plink --bfile GWAS_QC1 --remove wrong_het_missing.txt --make-bed --out GWAS-QC2
 ```
 
-We will create new bed, bim, fam files if we name the outpit differently or we will overwrite the ones we already had if we don't change the output name.
+We will create new bed, bim, fam files if we name the output differently or we will overwrite the ones we already had if we don't change the output name.
 
 
 **Identification of duplicated or related individuals**
