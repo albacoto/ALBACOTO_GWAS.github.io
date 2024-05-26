@@ -34,9 +34,16 @@ Once in R we join the 2 files that we just talked about so we are able to create
 
 
 Inside R we should also filter out outliers for the variables, and then save the file so we later remove it in the file (using PLINK) and not only in R. 
-We filter the outliers that have a genotype missing rate >=0.03 or a heterozygosity rate that is more than 3 s.d. from the mean. To remove this file using PLINK we should type:
+We filter the outliers that have a genotype missing rate >=0.03 and a heterozygosity rate that is more than 3 s.d. from the mean. 
+
+Note that we have to upload the txt file that we will obtain from R in the cluster using the following command:
 ```sh
-plink --bfile gwas_data --remove wrong_het_missing_values.txt --make-bed --out GWA-QC-nohet
+scp /path/to/file @login.genome.au.dk:/path/to/directory/
+```
+
+To remove this file using PLINK we should type:
+```sh
+plink --bfile GWAS_QC1 --remove wrong_het_missing.txt --make-bed --out GWAS-QC2
 ```
 
 We will create new bed, bim, fam files if we name the outpit differently or we will overwrite the ones we already had if we don't change the output name.
