@@ -80,7 +80,7 @@ SNPs with an excessive missing data rate
 
 We need to run the --missing command again to generate the .lmiss with the missing data rate for each SNP: 
 ```sh
-plink --bfile GWAS-QC3 --missing --out GWA-QC
+plink --bfile GWAS-QC3 --allow-no-sex --missing --out GWAS-QC3
 ```
 
 The --test-missing command tests for association between missingness and case/control status, using Fisher's exact test. It produces a file with ".missing" suffix.
