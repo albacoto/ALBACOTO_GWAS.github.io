@@ -78,12 +78,10 @@ plink --bfile  GWAS-QC2 --remove ibd_filtered.txt --make-bed --out GWA-QC3
 
 SNPs with an excessive missing data rate
 
-Run the --missing command again to generate the GWA-data.lmiss with the missing data rate for each SNP: 
+We need to run the --missing command again to generate the .lmiss with the missing data rate for each SNP: 
 ```sh
-plink --bfile GWA-QC-unique --missing --out GWA-QC-unique 
+plink --bfile GWAS-QC3 --missing --out GWA-QC
 ```
-
-(We get the .imiss and .lmiss files).
 
 The --test-missing command tests for association between missingness and case/control status, using Fisher's exact test. It produces a file with ".missing" suffix.
 Run the test-missing command: plink --bfile GWA-QC-unique --allow-no-sex --test-missing --out GWA-QC-unique-missing
