@@ -34,7 +34,7 @@ Once in R we join the 2 files that we just talked about so we are able to create
 
 
 Inside R we should also filter out outliers for the variables, and then save the file so we later remove it in the file (using PLINK) and not only in R. 
-We have made a file with the FID and IID of all individuals that have a genotype missing rate >=0.03 or a heterozygosity rate that is more than 3 s.d. from the mean (this is calculated in R). To remove this file using PLINK we should type:
+We filter the outliers that have a genotype missing rate >=0.03 or a heterozygosity rate that is more than 3 s.d. from the mean. To remove this file using PLINK we should type:
 ```sh
 plink --bfile gwas_data --remove wrong_het_missing_values.txt --make-bed --out GWA-QC-nohet
 ```
