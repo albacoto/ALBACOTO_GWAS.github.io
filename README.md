@@ -12,7 +12,7 @@ also activate the conda environment which has PLINK downloaded. Note to perform 
 
 **Identification of individuals with elevated missing data rates or outlying heterozygosity rate**
 ```sh
-plink --bfile gwas_data --missing --out GWA-QC1 
+plink --bfile gwas_data --missing --out GWAS-QC1 
 ```
 This command will create the files .imiss, .lmiss, .hh, .log and .nosex. The phenotype of individuals in the data is without gender information. So that is why we use “--allow-no-sex” option (which gives the .nosex file).
 
