@@ -45,8 +45,7 @@ To remove this file using PLINK we should type:
 ```sh
 plink --bfile gwas_data --allow-no-sex --remove wrong_het_missing.txt --make-bed --out GWAS-QC2
 ```
-
-We will create new bed, bim, fam files if we name the output differently or we will overwrite the ones we already had if we don't change the output name.
+Now we have created new bed, bim, fam files if we name the output differently or we will overwrite the ones we already had if we don't change the output name. This new files don't contain the outliers we just calculated above.
 
 
 **Identification of duplicated or related individuals**
