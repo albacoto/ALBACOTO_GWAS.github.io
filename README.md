@@ -52,15 +52,15 @@ Now we have created new bed, bim, fam files if we name the output differently or
 
 We have to calculate the identity by descent (IBD). 
 
-We will “prune” the data and create a list of SNPs that are non-correlated. This can be done by the following command:
+1) We will “prune” the data and create a list of SNPs that are non-correlated. This is performed with the command:
 ```sh
-plink --bfile GWA-QC-nohet --allow-no-sex --indep-pairwise 500kb 5 0.2 --out GWA-QC
+plink --bfile GWAS-QC2 --allow-no-sex --indep-pairwise 500kb 5 0.2 --out GWAS-QC2
 ```
-It saves the list of independent SNPs as .prune.in.  
+We obtain .prune.in and prune.out files. In the .prune.it we have the list of independent SNPs. 
 
-To calculate IBD between each pair of individuals:
+2) To calculate IBD between each pair of individuals:
 ```sh
-plink --bfile GWA-QC-nohet --allow-no-sex --extract GWA-QC.prune.in --genome --min 0.185 --out GWA-QC-ibd
+plink --bfile GWAS-QC2 --allow-no-sex --extract GWAS-QC2.prune.in --genome --min 0.185 --out GWAS-QC2
 ```
 The --min 0.185 option means that it will only print the calculated IBD if it is above 0.185 (Mean between second-degree relatives:0.25 and third-degree relatives:0.125). This produces a file with the extions .genome 
 
