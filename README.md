@@ -92,7 +92,7 @@ Warning: Skipping --test-missing since at least one case and one control is requ
 
 We will use the pruned set of SNPs to calculate the relationship matrix and calculate the first 20 principle components (PCs): 
 ```sh
-plink --bfile GWA-QC-unique --extract GWA-QC.prune.in --pca 20 --out gwa-pca
+plink --bfile GWAS-QC2 --extract GWAS-QC2.prune.in --pca 20 --out GWAS-QC2
 ```
 This calculates the eigenvalues and the eigenvectors, and stores them in two files (.eigenval, .eigenvec).
 
