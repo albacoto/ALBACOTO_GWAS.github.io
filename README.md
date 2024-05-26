@@ -30,6 +30,9 @@ Note: To be able to charge the file .imiss and .het in R we need to have it in o
 scp @login.genome.au.dk:/path/to/file .
 ```
 
+Once in R we join the 2 files that we just talked about so we are able to create a plot where the observed heterozygosity rate per individual is on the x axis and the proportion of missing SNPs per individuals is plotted on the y axis. We therefore interpret the plot and results we obtain.
+
+
 Inside R we should also filter out outliers for the variables, and then save the file so we later remove it using PLINK. We have made a file with the FID and IID of all individuals that have a genotype missing rate >=0.03 or a heterozygosity rate that is more than 3 s.d. from the mean (this is calculated in R). To remove this file using PLINK we should type:
 ```sh
 plink --bfile gwas_data --remove wrong_het_missing_values.txt --make-bed --out GWA-QC-nohet
