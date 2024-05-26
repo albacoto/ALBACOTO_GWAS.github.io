@@ -18,7 +18,7 @@ This command will create the files .imiss, .lmiss, .hh, .log and .nosex. The phe
 
 The fourth column in the file GWA-data.imiss (N_MISS) denotes the number of missing SNPs and the sixth column (F_MISS) denotes the proportion of missing SNPs per individual.
 ```sh
-plink --bfile gwas_data --het --out GWA-QC-het 
+plink --bfile gwas_data --allow-no-sex --het --out GWAS-QC1-het 
 ```
 This command will create the file GWA-data.het, in which the third column denotes the observed number of homozygous genotypes [O(Hom)] and the fifth column denotes the number of non-missing genotypes [N(NM)] per individual.
 
