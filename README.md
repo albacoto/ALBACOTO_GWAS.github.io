@@ -114,8 +114,9 @@ Now, we should take into account the phenotypes of our eye color file. The pheno
 Note: add name columns for the other columns that are not phenotype.
 
 Afterwards we must join the PCA dataset that we created in the step before (with the 20 PCs) with the dataset that contains the phenotypes. And if there are NA values we should remove them and update it in the files from the cluster using plink (--make-bed).
-Following, from these new fam, bed, bim files we just obtained should do again all the processing of the data until we obtain the .eigenvec and .eigenval files to perform a new PCA.
 
+Following, from these new fam, bed, bim files we just obtained should do again all the processing of the data until we obtain the .eigenvec and .eigenval files to perform a new PCA.
+And also we will do again the QC with the SNPs to obtain the distribution of missing data rates. 
 
 
 
