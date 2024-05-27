@@ -94,11 +94,13 @@ We will use the pruned set of SNPs to calculate the relationship matrix and calc
 ```sh
 plink --bfile GWAS-QC2 --extract GWAS-QC2.prune.in --pca 20 --out GWAS-QC2
 ```
-This calculates the eigenvalues and the eigenvectors, and stores them in two files (.eigenval, .eigenvec).
+This calculates the eigenvalues and the eigenvectors.
 
-Load gwa.eigenvec into R and make a plot with the first PC on the x-axis and the second PC on the y-axis. In R we load the eigenvec data, but we have to name the columns properly, since we have 22 columns, and we performed the plink so that we would obtain a PCA of 20 we know that the first 2 columns are going to be the identifiers. 
+We should load the eigenvectors file to R and make a plot with the 2 firsts PCs. 
 
-Note: We can use the eigenvalues to compute the variance explained by each PC and help interpret the results.
+Note: name the columns properly (22 columns) remember we performed the plink so that we would obtain a PCA of 20 (the first 2 columns are going to be the identifiers). 
+
+We can use the eigenvalues to compute the variance explained by each PC and interpret the results.
 
 
 
