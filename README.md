@@ -119,6 +119,26 @@ Following, from these new fam, bed, bim files we just obtained should do again a
 And also we will do again the QC with the SNPs to obtain the distribution of missing data rates. 
 
 
+To add the phenotypes we obtained from R we would have to perform the following command with a txt previously obtained from R (where we created the binary phenotype) to join the phenotypes in the .fam, .bim, .bed files:
+```sh
+plink --bfile GWAS-QC5 --pheno eye_color_id.txt --make-bed --out GWAS-QC6
+```
+With this we will obtain the .fam file with the phenotypes 1 and 2 for brown and blue and not with -9. Now that we have the phenotypes we should proceed with the last steps of QC. 
+
+
+We shoud now run a new command:
+```sh
+plink --bfile GWAS-QC6 --test-missing --out GWAS-QC6
+```
+This will test for association between missingness and case/control status (which are the 2 phenotypes that we have), using Fisher's exact test. It produces a file ".missing".
+
+Then, we make a list in R where the p-value < 1e-5. And we save the list as a txt. In this file we will have the low-quality SNPs, so we write the following command to remove them:
+```sh
+plink --bfile GWAS-QC6 --exclude fail-diffmiss-qc.txt --geno 0.05 --hwe 0.00001 --maf 0.01 --make-bed --out GWAS-QC7
+```
+In addition to removing SNPs identified with differential call rates between cases and controls, this command removes SNPs with call rate less than 95% with --geno option and deviation from HWE (p<1e-5) with the --hwe option. It also removes all SNPs with minor allele frequency less than a specified threshold using the --maf option.
+
+
 
 
 
