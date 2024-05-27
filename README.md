@@ -107,7 +107,13 @@ From the plot with the PCs we must look if we have any outlier and if so get rid
 plink --bfile GWAS-QC2 --remove pca_outlier.txt --make-bed --out GWAS-QC4
 ```
 
+ASSOCIATION TESTING:
 
+Now, we should take into account the phenotypes of our eye color file. The pheno column in our .fam file contains the values of -9 for all individuals. We must change that for a binary phenotype of the eye color that we like (we can divide it in blue and brown eye color with 1 & 2 values). 
+
+Note: add name columns for the other columns that are not phenotype.
+
+Afterwards we must join the PCA dataset that we created in the step before (with the 20 PCs) with the dataset that contains the phenotypes.
 
 
 
