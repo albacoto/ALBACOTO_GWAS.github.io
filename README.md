@@ -102,6 +102,10 @@ Note: name the columns properly (22 columns) remember we performed the plink so 
 
 We can use the eigenvalues to compute the variance explained by each PC and interpret the results.
 
+From the plot with the PCs we must look if we have any outlier and if so get rid of it:
+```sh
+plink --bfile GWAS-QC2 --remove pca_outlier.txt --make-bed --out GWA-QC4
+```
 
 
 
