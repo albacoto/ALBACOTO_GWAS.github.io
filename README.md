@@ -113,7 +113,8 @@ Now, we should take into account the phenotypes of our eye color file. The pheno
 
 Note: add name columns for the other columns that are not phenotype.
 
-Afterwards we must join the PCA dataset that we created in the step before (with the 20 PCs) with the dataset that contains the phenotypes.
+Afterwards we must join the PCA dataset that we created in the step before (with the 20 PCs) with the dataset that contains the phenotypes. And if there are NA values we should remove them and update it in the files from the cluster using plink (--make-bed)
+
 
 
 
