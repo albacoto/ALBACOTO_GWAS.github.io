@@ -104,7 +104,7 @@ We can use the eigenvalues to compute the variance explained by each PC and inte
 
 From the plot with the PCs we must look if we have any outlier and if so get rid of it:
 ```sh
-plink --bfile GWAS-QC2 --remove pca_outlier.txt --make-bed --out GWA-QC4
+plink --bfile GWAS-QC2 --remove pca_outlier.txt --make-bed --out GWAS-QC4
 ```
 
 
