@@ -169,6 +169,12 @@ Compute Inflation Factor (λ):
 lambda <- median(fisher$ChiSq) / qchisq(0.5, df = 1)
 ```
 
+ADJUSTING FOR PCs:
+We will use a logistic regression test to perform association test while correcting for covariates. To include the first PC as a covariate we should type:
+```sh
+plink --bfile GWAS-QC7 --logistic --covar GWAS-QC5.eigenvec --covar-number 1 --out adjust1pc
+```
+The resulting file will be called .assoc.logistic. It contains p-values for both the SNPs and the covariates. To get the p-values for the SNPs should look at the rows with the value “ADD” in the “TEST” column, so those are the values we should only select. (It is possible to include more PCs. To include the first x covariates you can write “--covar-number 1-x”.)
 
 
 
