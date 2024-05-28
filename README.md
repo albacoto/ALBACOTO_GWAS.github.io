@@ -139,6 +139,14 @@ plink --bfile GWAS-QC6 --exclude fail-diffmiss-qc.txt --geno 0.05 --hwe 0.00001 
 In addition to removing SNPs identified with differential call rates between cases and controls, this command removes SNPs with call rate less than 95% with --geno option and deviation from HWE (p<1e-5) with the --hwe option. It also removes all SNPs with minor allele frequency less than a specified threshold using the --maf option.
 
 
+**GWAS ASSOCIATION**
+To test for association between SNPs and 2 phenotypes using an allelic Fisher’s exact test, type:
+```sh
+plink --bfile GWAS-QC7 --assoc fisher --out GWAS-QC7
+```
+We will obtain an output file .fisher and from this we should be able to obtain the p-value and location of the most significant variant.
+
+
 
 
 
