@@ -152,7 +152,14 @@ We will obtain an output file .fisher
 
 Note: if in point 4) we see that there are indications of inflation we should be able to calculate λ (Genomic Inflation Factor) to differentiate between true associations and general inflation. The whole process is explained next
 
-GENOMIC CONTROL 
+
+ASSOCIATION ADJUSTED
+For further analysis we can try to see the adjusted association fisher (which is another multiple testing correction). It helps ensure that your results account for the large number of tests performed, reducing the chance of false positives.
+```sh
+plink --bfile GWAS-QC7 --assoc fisher --adjust --out GWAS-QC7
+```
+The output of this command will be .assoc.fisher.adjusted and from this we will perform Genomic control
+
 Calculate Chi-squared Quantiles: 
 ```sh
 qchisq(fisher$P, df = 1, lower.tail = FALSE)
@@ -169,18 +176,10 @@ Convert Back to P-values:
 ```sh
 pchisq(fisher$Adjusted_ChiSq, df = 1, lower.tail = FALSE)
 ```
-Retrieve Adjusted P-value for rs1129038: 
+Retrieve Adjusted P-value for rs4778241: 
 ```sh
-fisher[fisher$SNP == "rs1129038", ]$Adjusted_P
+fisher[fisher$SNP == "rs4778241", ]$Adjusted_P
 ```
-
-
-For further analysis we can try to see the adjusted association fisher (which is another multiple testing correction). It helps ensure that your results account for the large number of tests performed, reducing the chance of false positives.
-```sh
-plink --bfile GWAS-QC7 --assoc fisher --adjust --out GWAS-QC7
-```
-
-
 
 
 
