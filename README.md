@@ -179,10 +179,12 @@ The resulting file will be called .assoc.logistic. It contains p-values for both
 
 
 **FURTHER ANALYSIS**
+
 Make association tests where to condition on the most significant variant:
-
-
-
+```sh
+plink --bfile GWAS-QC7 --allow-no-sex --condition rs4778241 --covar GWAS-QC5.eigenvec --covar-number 1-2  --logistic --out GWAS-QC7_condition
+```
+and from this calculate again the manhattan and qq plot and look if we have a new most significant SNP.
 
 
 
