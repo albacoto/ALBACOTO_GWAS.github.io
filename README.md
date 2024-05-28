@@ -144,7 +144,11 @@ To test for association between SNPs and 2 phenotypes using an allelic Fisher’
 ```sh
 plink --bfile GWAS-QC7 --assoc fisher --out GWAS-QC7
 ```
-We will obtain an output file .fisher and from this we should be able to obtain the p-value and location of the most significant variant.
+We will obtain an output file .fisher 
+1) From this we should be able to obtain the p-value and location of the most significant variant
+2) We can also do Bonferroni correction and see if the most significant variant calcualted from before continues to be significant
+3) Do a manhattan plot and think if there are other variants close to the most significant variant that are also associated with the phenotypes we are stuyding?
+4) Do a QQ-plot
 
 
 
