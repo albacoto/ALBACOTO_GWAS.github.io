@@ -161,25 +161,14 @@ plink --bfile GWAS-QC7 --assoc fisher --adjust --out GWAS-QC7
 The output of this command will be .assoc.fisher.adjusted and from this we will perform Genomic control
 
 Calculate Chi-squared Quantiles: 
-```sh
+```{r}
 qchisq(fisher$P, df = 1, lower.tail = FALSE)
 ```
 Compute Inflation Factor (λ): 
-```sh
-median(fisher$ChiSq) / qchisq(0.5, df = 1)
+```{r}
+lambda <- median(fisher$ChiSq) / qchisq(0.5, df = 1)
 ```
-Adjust Chi-squared Values: 
-```sh
-fisher$ChiSq / lambda
-```
-Convert Back to P-values:
-```sh
-pchisq(fisher$Adjusted_ChiSq, df = 1, lower.tail = FALSE)
-```
-Retrieve Adjusted P-value for rs4778241: 
-```sh
-fisher[fisher$SNP == "rs4778241", ]$Adjusted_P
-```
+
 
 
 
