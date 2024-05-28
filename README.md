@@ -1,10 +1,17 @@
 # ALBACOTO_GWAS.github.io
 
-First enter to your GenomeDK, find the PopGen folder and start an interactive job:
+---
+In this GitHub page I will be talking about how I conducted the GWAS project, the main commands used and its purpose and which are the questions to be responded later in the report.
+
+---
+
+First enter to GenomeDK and start an interactive job:
 ```sh
 srun --mem-per-cpu=1g --time=3:00:00 --account=populationgenomics --pty bash
 ```
-also activate the conda environment which has PLINK downloaded. Note to perform all the code in the same folder in which you have the .fam, .bim, .bed files
+also activate the conda environment which has PLINK downloaded. 
+
+Note to perform all the code in the same folder where I have the data stored (.fam, .bim, .bed files)
 
 
 **GWAS QC USING PLINK**
