@@ -148,7 +148,37 @@ We will obtain an output file .fisher
 1) From this we should be able to obtain the p-value and location of the most significant variant
 2) We can also do Bonferroni correction and see if the most significant variant calcualted from before continues to be significant
 3) Do a manhattan plot and think if there are other variants close to the most significant variant that are also associated with the phenotypes we are stuyding?
-4) Do a QQ-plot
+4) Do a QQ-plot and answer if there is a general inflation of the test statistic?
+
+Note: if in point 4) we see that there are indications of inflation we should be able to calculate λ (Genomic Inflation Factor) to differentiate between true associations and general inflation. The whole process is explained next
+
+GENOMIC CONTROL 
+Calculate Chi-squared Quantiles: 
+```sh
+qchisq(fisher$P, df = 1, lower.tail = FALSE)
+```
+Compute Inflation Factor (λ): 
+```sh
+median(fisher$ChiSq) / qchisq(0.5, df = 1)
+```
+Adjust Chi-squared Values: 
+```sh
+fisher$ChiSq / lambda
+```
+Convert Back to P-values:
+```sh
+pchisq(fisher$Adjusted_ChiSq, df = 1, lower.tail = FALSE)
+```
+Retrieve Adjusted P-value for rs1129038: 
+```sh
+fisher[fisher$SNP == "rs1129038", ]$Adjusted_P
+```
+
+
+For further analysis we can try to see the adjusted association fisher (which is another multiple testing correction). It helps ensure that your results account for the large number of tests performed, reducing the chance of false positives.
+```sh
+plink --bfile GWAS-QC7 --assoc fisher --adjust --out GWAS-QC7
+```
 
 
 
