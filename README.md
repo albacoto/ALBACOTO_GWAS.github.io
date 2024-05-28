@@ -178,7 +178,8 @@ The resulting file will be called .assoc.logistic. It contains p-values for both
 
 
 
-
+**FURTHER ANALYSIS**
+Make association tests where to condition on the most significant variant:
 
 
 
