@@ -59,11 +59,11 @@ Now we have created new bed, bim, fam files if we name the output differently or
 
 We have to calculate the identity by descent (IBD). 
 
-1) We will “prune” the data and create a list of SNPs that are non-correlated. This is performed with the command:
+1) We will “prune” so we create a list of SNPs that are non-correlated. This is performed with the command:
 ```sh
 plink --bfile GWAS-QC2 --allow-no-sex --indep-pairwise 500kb 5 0.2 --out GWAS-QC2
 ```
-We obtain .prune.in and prune.out files. In the .prune.it we have the list of independent SNPs. 
+We obtain .prune.in and prune.out files. In the .prune.it we have the list of independent SNPs wich we have specified to have an r2 value greater than a given threshold which is typically chosen to be 0.2 (defined in the indep-pariwise command also with a determined window size of 5 variants as the step size).
 
 2) To calculate IBD between each pair of individuals:
 ```sh
