@@ -65,7 +65,7 @@ plink --bfile GWAS-QC2 --allow-no-sex --indep-pairwise 500kb 5 0.2 --out GWAS-QC
 ```
 We obtain .prune.in and prune.out files. In the .prune.it we have the list of independent SNPs wich we have specified to have an r2 value greater than a given threshold which is typically chosen to be 0.2 (defined in the indep-pariwise command also with a determined window size of 5 variants as the step size).
 
-2) To calculate IBD between each pair of individuals:
+2) To calculate IBD between each pair of individuals we remove the list we just created of non-correlated pairs of SNPs:
 ```sh
 plink --bfile GWAS-QC2 --allow-no-sex --extract GWAS-QC2.prune.in --genome --min 0.185 --out GWAS-QC2
 ```
