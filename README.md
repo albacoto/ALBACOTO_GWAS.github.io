@@ -57,9 +57,9 @@ Now we have created new bed, bim, fam files if we name the output differently or
 
 **Identification of duplicated or related individuals**
 
-We have to calculate the identity by descent (IBD). 
+We have to calculate the identity by descent (IBD), and we should do it on a set of non-correlated SNPs.
 
-1) We will “prune” so we create a list of SNPs that are non-correlated. This is performed with the command:
+1) We will “prune” so we create a list of SNPs where no pair has an r2 value greater than a given threshold, typically 0.2 with the indep-pairwise command, and we should use 500kb as window size and 5 variants as step size:
 ```sh
 plink --bfile GWAS-QC2 --allow-no-sex --indep-pairwise 500kb 5 0.2 --out GWAS-QC2
 ```
