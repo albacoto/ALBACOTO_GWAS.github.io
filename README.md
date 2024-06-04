@@ -9,14 +9,14 @@ First enter to GenomeDK and start an interactive job:
 ```sh
 srun --mem-per-cpu=1g --time=3:00:00 --account=populationgenomics --pty bash
 ```
-also activate the conda environment which has PLINK downloaded. 
+also activate the conda environment which has PLINK downloaded (`popgen`). 
 
 Note to perform all the code in the same folder where I have the data stored (.fam, .bim, .bed files)
 
 ---
 
 
-**GWAS QC USING PLINK**
+## GWAS QC USING PLINK
 
 
 **Identification of individuals with elevated missing data rates or outlying heterozygosity rate**
@@ -90,6 +90,8 @@ plink --bfile  GWAS-QC2 --remove ibd_filtered.txt --make-bed --out GWA-QC3
 ```
 
 
+- Are there any closely related individuals in the sample?
+
 ---
 **SNP QC**
 
@@ -99,11 +101,11 @@ We need to run the --missing command again to generate the .lmiss with the missi
 ```sh
 plink --bfile GWAS-QC3 --allow-no-sex --missing --out GWAS-QC3
 ```
+At this point we need to add the phenotypes variable in eye_color.txt to distinguishing the phenotypes related with the eye color.
 
-At this point we need to add the phenotypes variable in eye_color.txt to distinguishing the phenotypes related with the eye color. 
 ---
 
-**PCA**
+## PCA 
 
 We will use the pruned set of SNPs to calculate the relationship matrix and calculate the first 20 principle components (PCs): 
 ```sh
@@ -152,9 +154,12 @@ Then, we make a list in R where the p-value < 1e-5. And we save the list as a tx
 plink --bfile GWAS-QC6 --exclude fail-diffmiss-qc.txt --geno 0.05 --hwe 0.00001 --maf 0.01 --make-bed --out GWAS-QC7
 ```
 In addition to removing SNPs identified with differential cell rates between cases and controls, this command removes SNPs with cell rate less than 95% with --geno option and deviation from HWE (p<1e-5) with the --hwe option. It also removes all SNPs with minor allele frequency less than a specified threshold using the --maf option.
+
+- What does PCA tell you about the samples?
+
 ---
 
-**GWAS ASSOCIATION**
+## GWAS ASSOCIATION
 To test for association between SNPs and 2 phenotypes using an allelic Fisher’s exact test, type:
 ```sh
 plink --bfile GWAS-QC7 --assoc fisher --out GWAS-QC7
@@ -168,7 +173,7 @@ We will obtain an output file .fisher
 Note: if in point 4) we see that there are indications of inflation --> we should be able to calculate λ (Genomic Inflation Factor) to differentiate between true associations and general inflation. The whole process is explained next:
 
 
-ASSOCIATION ADJUSTED
+**ASSOCIATION ADJUSTED**
 For further analysis we can try to see the adjusted association fisher (which is another multiple testing correction). It helps ensure that your results account for the large number of tests performed, reducing the chance of false positives.
 ```sh
 plink --bfile GWAS-QC7 --assoc fisher --adjust --out GWAS-QC7
@@ -184,7 +189,7 @@ Compute Inflation Factor (λ):
 lambda <- median(fisher$ChiSq) / qchisq(0.5, df = 1)
 ```
 
-ADJUSTING FOR PCs:
+**ADJUSTING FOR PCs:**
 We will use a logistic regression test to perform association test while correcting for covariates. To include the first PC as a covariate we should type:
 ```sh
 plink --bfile GWAS-QC7 --logistic --covar GWAS-QC5.eigenvec --covar-number 1 --out adjust1pc
@@ -193,7 +198,7 @@ The resulting file will be called .assoc.logistic. It contains p-values for both
 
 
 
-**FURTHER ANALYSIS**
+## FURTHER ANALYSIS
 
 1) Make association tests where to condition on the most significant variant:
 ```sh
