@@ -750,34 +750,6 @@ ggplot(filtered_data4, aes(x = as.factor(rs7495174_G), fill = as.factor(pheno)))
 ```
 
 
-```{r}
-# Extract relevant columns: IID, phenotype, and the most significant SNP genotype
-# Assuming the SNP column is named "rs4778241_A" and "rs4778241_B" for alleles A and B
-relevant_data <- merged_data %>%
-  select(IID, phenotype, rs4778241_A, rs7179994_G)
-
-# Create a new column for the genotype combination (e.g., AA, AB, BB)
-relevant_data <- relevant_data %>%
-  mutate(genotype = paste0(rs4778241_A, "/", rs4778241_B))
-
-# Summarize the distribution of phenotypes for each genotype
-phenotype_distribution <- relevant_data %>%
-  group_by(genotype, phenotype) %>%
-  summarise(count = n())
-
-print(phenotype_distribution)
-
-# Plot the distribution using ggplot2
-ggplot(phenotype_distribution, aes(x = genotype, y = count, fill = phenotype)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Distribution of Phenotypes for Each Genotype at rs4778241",
-       x = "Genotype at rs4778241",
-       y = "Count",
-       fill = "Phenotype") +
-  theme_minimal()
-
-```
-
 
 
 
