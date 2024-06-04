@@ -13,6 +13,8 @@ also activate the conda environment which has PLINK downloaded.
 
 Note to perform all the code in the same folder where I have the data stored (.fam, .bim, .bed files)
 
+---
+
 
 **GWAS QC USING PLINK**
 
@@ -21,38 +23,46 @@ Note to perform all the code in the same folder where I have the data stored (.f
 ```sh
 plink --bfile gwas_data --allow-no-sex --missing --out GWAS-QC1 
 ```
-This command will create the files .imiss, .lmiss, .hh, .log and .nosex. The phenotype of individuals in the data is without gender information. So that is why we use “--allow-no-sex” option (which gives the .nosex file).
+This command will create the files .imiss, .lmiss, .hh, .log and .nosex. The phenotype of individuals in the data is without gender information. That is why we use “--allow-no-sex” option (which gives the .nosex file).
 
-The fourth column in the file GWA-data.imiss (N_MISS) denotes the number of missing SNPs and the sixth column (F_MISS) denotes the proportion of missing SNPs per individual.
+The fourth column in the file GWA-data.imiss (N_MISS) denotes the number of missing SNPs and the sixth column (F_MISS) denotes the proportion of missing SNPs per individual. 
+
+
+Following,
 ```sh
 plink --bfile gwas_data --allow-no-sex --het --out GWAS-QC1-het 
 ```
-This command will create the file GWA-data.het, in which the third column denotes the observed number of homozygous genotypes [O(Hom)] and the fifth column denotes the number of non-missing genotypes [N(NM)] per individual.
+this command will create the file GWA-data.het, in which the third column denotes the observed number of homozygous genotypes [O(Hom)] and the fifth column denotes the number of non-missing genotypes [N(NM)] per individual.
 
 
 We then open R to create a plot in which the observed heterozygosity rate per individual is plotted on the x axis and the proportion of missing SNPs per individuals is plotted on the y axis. To calculate the observed heterozygosity rate per individual we should do it using the formula: Het = (N(NM) − O(Hom))/N(NM). 
 
+---
 Note: To be able to charge the file .imiss and .het in R we need to have it in our own computer, we obtain it from the cluster like this:
 ```sh
 scp @login.genome.au.dk:/path/to/file .
 ```
+---
 
 Once in R we join the 2 files that we just talked about so we are able to create a plot where the observed heterozygosity rate per individual is on the x axis and the proportion of missing SNPs per individuals is plotted on the y axis. We therefore interpret the plot and results we obtain.
 
 
-Inside R we should also filter out outliers for the variables, and then save the file so we later remove it in the file (using PLINK) and not only in R. 
+Inside R we should also filter out outliers for the variables, and then save the file so we later remove it in the cluster (using PLINK) and not only in R. 
 We filter the outliers that have a genotype missing rate >=0.03 and a heterozygosity rate that is more than 3 s.d. from the mean. 
 
+---
 Note that we have to upload the txt file that we will obtain from R in the cluster using the following command:
 ```sh
 scp /path/to/file @login.genome.au.dk:/path/to/directory/
 ```
+---
 
 To remove this file using PLINK we should type:
 ```sh
 plink --bfile gwas_data --allow-no-sex --remove wrong_het_missing.txt --make-bed --out GWAS-QC2
 ```
-Now we have created new bed, bim, fam files if we name the output differently or we will overwrite the ones we already had if we don't change the output name. This new files don't contain the outliers we just calculated above.
+Now, we have created new .bed, .bim, .fam files (if we name the output differently or we will overwrite the ones we already had if we don't change the output name). 
+This new files don't contain the outliers we just calculated above.
 
 
 **Identification of duplicated or related individuals**
@@ -80,7 +90,7 @@ plink --bfile  GWAS-QC2 --remove ibd_filtered.txt --make-bed --out GWA-QC3
 ```
 
 
-
+---
 **SNP QC**
 
 SNPs with an excessive missing data rate
@@ -91,7 +101,7 @@ plink --bfile GWAS-QC3 --allow-no-sex --missing --out GWAS-QC3
 ```
 
 At this point we need to add the phenotypes variable in eye_color.txt to distinguishing the phenotypes related with the eye color. 
-
+---
 
 **PCA**
 
@@ -102,7 +112,6 @@ plink --bfile GWAS-QC2 --extract GWAS-QC2.prune.in --pca 20 --out GWAS-QC2
 This calculates the eigenvalues and the eigenvectors.
 
 We should load the eigenvectors file to R and make a plot with the 2 firsts PCs. 
-
 Note: name the columns properly (22 columns) remember we performed the plink so that we would obtain a PCA of 20 (the first 2 columns are going to be the identifiers). 
 
 We can use the eigenvalues to compute the variance explained by each PC and interpret the results.
@@ -118,10 +127,10 @@ Now, we should take into account the phenotypes of our eye color file. The pheno
 
 Note: add name columns for the other columns that are not phenotype.
 
-Afterwards we must join the PCA dataset that we created in the step before (with the 20 PCs) with the dataset that contains the phenotypes. And if there are NA values we should remove them and update it in the files from the cluster using plink (--make-bed).
+Afterwards we must join the PCA dataset we created in the step before (with the 20 PCs) with the dataset that contains the phenotypes. If there are NA values we should remove them and update them in the files from the cluster using plink (--make-bed).
 
-Following, from these new fam, bed, bim files we just obtained should do again all the processing of the data until we obtain the .eigenvec and .eigenval files to perform a new PCA.
-And also we will do again the QC with the SNPs to obtain the distribution of missing data rates. 
+Following, from these new .fam, .bed, .bim files we just obtained, we should do again all the processing of the data until we obtain the .eigenvec and .eigenval files to perform a new PCA.
+We will also perform again the QC with the SNPs to obtain the distribution of missing data rates. 
 
 
 To add the phenotypes we obtained from R we would have to perform the following command with a txt previously obtained from R (where we created the binary phenotype) to join the phenotypes in the .fam, .bim, .bed files:
@@ -135,14 +144,15 @@ We shoud now run a new command:
 ```sh
 plink --bfile GWAS-QC6 --test-missing --out GWAS-QC6
 ```
+
 This will test for association between missingness and case/control status (which are the 2 phenotypes that we have), using Fisher's exact test. It produces a file ".missing".
 
 Then, we make a list in R where the p-value < 1e-5. And we save the list as a txt. In this file we will have the low-quality SNPs, so we write the following command to remove them:
 ```sh
 plink --bfile GWAS-QC6 --exclude fail-diffmiss-qc.txt --geno 0.05 --hwe 0.00001 --maf 0.01 --make-bed --out GWAS-QC7
 ```
-In addition to removing SNPs identified with differential call rates between cases and controls, this command removes SNPs with call rate less than 95% with --geno option and deviation from HWE (p<1e-5) with the --hwe option. It also removes all SNPs with minor allele frequency less than a specified threshold using the --maf option.
-
+In addition to removing SNPs identified with differential cell rates between cases and controls, this command removes SNPs with cell rate less than 95% with --geno option and deviation from HWE (p<1e-5) with the --hwe option. It also removes all SNPs with minor allele frequency less than a specified threshold using the --maf option.
+---
 
 **GWAS ASSOCIATION**
 To test for association between SNPs and 2 phenotypes using an allelic Fisher’s exact test, type:
@@ -152,10 +162,10 @@ plink --bfile GWAS-QC7 --assoc fisher --out GWAS-QC7
 We will obtain an output file .fisher 
 1) From this we should be able to obtain the p-value and location of the most significant variant
 2) We can also do Bonferroni correction and see if the most significant variant calcualted from before continues to be significant
-3) Do a manhattan plot and think if there are other variants close to the most significant variant that are also associated with the phenotypes we are stuyding?
-4) Do a QQ-plot and answer if there is a general inflation of the test statistic?
+3) Do a manhattan plot and think if there are other variants close to the most significant variant that are also associated with the phenotypes we are stuyding
+4) Do a QQ-plot and answer if there is a general inflation of the test statistic
 
-Note: if in point 4) we see that there are indications of inflation we should be able to calculate λ (Genomic Inflation Factor) to differentiate between true associations and general inflation. The whole process is explained next
+Note: if in point 4) we see that there are indications of inflation --> we should be able to calculate λ (Genomic Inflation Factor) to differentiate between true associations and general inflation. The whole process is explained next:
 
 
 ASSOCIATION ADJUSTED
@@ -179,7 +189,7 @@ We will use a logistic regression test to perform association test while correct
 ```sh
 plink --bfile GWAS-QC7 --logistic --covar GWAS-QC5.eigenvec --covar-number 1 --out adjust1pc
 ```
-The resulting file will be called .assoc.logistic. It contains p-values for both the SNPs and the covariates. To get the p-values for the SNPs should look at the rows with the value “ADD” in the “TEST” column, so those are the values we should only select. (It is possible to include more PCs. To include the first x covariates you can write “--covar-number 1-x”.)
+The resulting file will be called .assoc.logistic. It contains p-values for both the SNPs and the covariates. To get the p-values for the SNPs should look at the rows with the value “ADD” in the “TEST” column, so those are the values we should only select. (It is possible to include more PCs. 
 
 
 
@@ -189,7 +199,7 @@ The resulting file will be called .assoc.logistic. It contains p-values for both
 ```sh
 plink --bfile GWAS-QC7 --allow-no-sex --condition rs4778241 --covar GWAS-QC5.eigenvec --covar-number 1-2  --logistic --out GWAS-QC7_condition
 ```
-and from this calculate again the manhattan and qq plot and look if we have a new most significant SNP.
+and from this calculate again the Manhattan and QQ plot and look if we have a new most significant SNP.
 
 
 
@@ -199,7 +209,7 @@ plink --bfile GWAS-QC7 --snp rs4778241 --window 50 --recode A --out significant_
 ```
 
 We use "--recode A" with "--snp" and "--window" option to get the variants around a specific SNP.
-We will obtain a .raw document from which we can proceed with its analysis in R.
+We will obtain a .raw document from which we can proceed with its analysis in Rstudio.
 
 
 
