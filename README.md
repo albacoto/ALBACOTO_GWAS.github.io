@@ -185,7 +185,7 @@ The resulting file will be called .assoc.logistic. It contains p-values for both
 
 **FURTHER ANALYSIS**
 
-Make association tests where to condition on the most significant variant:
+1) Make association tests where to condition on the most significant variant:
 ```sh
 plink --bfile GWAS-QC7 --allow-no-sex --condition rs4778241 --covar GWAS-QC5.eigenvec --covar-number 1-2  --logistic --out GWAS-QC7_condition
 ```
@@ -193,6 +193,13 @@ and from this calculate again the manhattan and qq plot and look if we have a ne
 
 
 
+2) Distribution of phenotypes for each of the genotypes at the most significant SNP.
+```sh
+plink --bfile GWAS-QC7 --snp rs4778241 --window 50 --recode A --out significant_snp_window
+```
+
+We use "--recode A" with "--snp" and "--window" option to get the variants around a specific SNP.
+We will obtain a .raw document from which we can proceed with its analysis in R.
 
 
 
