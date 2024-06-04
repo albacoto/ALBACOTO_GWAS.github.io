@@ -1,0 +1,785 @@
+---
+title: "Untitled"
+output: html_document
+date: "2024-05-04"
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+GWAS QC:
+
+Identification of individuals with missing data rates or heterozygosity rate
+```{r}
+missing <- read.table("/Users/albacoto/Desktop/finalproject/GWAS-QC1.imiss",header=T)
+
+# N_MISS: number of missing SNPs 
+# F_MISS: proportion of missing SNPs per individual
+```
+
+```{r}
+het <- read.table("/Users/albacoto/Desktop/finalproject/GWAS-QC1.het",header=T)
+
+# O.HOM: homozygous genotypes 
+# N(NM): non-missing genotypes per individual
+```
+
+Calculate heterozygosity rate
+```{r}
+#Het = (N(NM) − O(Hom))/N(NM)
+het$het_rate = (het$N.NM.-het$O.HOM.)/het$N.NM.
+```
+
+```{r}
+QC1 <- inner_join(missing,het)
+```
+
+Visualization:
+```{r}
+ggplot(QC1, aes(x = het_rate, y = F_MISS)) +
+  geom_point() +
+  labs(x = "Observed Heterozygosity Rate",
+       y = "Proportion of Missing SNPs",
+       title = "Observed Heterozygosity vs. Proportion of Missing SNPs")
+```
+
+```{r}
+# mean and sd to see in the plot heterozygosity rate that is more than 3 s.d. from the mean
+mean_het = mean(QC1$het_rate, na.rm = TRUE)
+sd_het = sd(QC1$het_rate, na.rm = TRUE)
+print(mean_het)
+print(sd_het)
+```
+
+```{r}
+ggplot(QC1, aes(x = het_rate, y = F_MISS)) +
+  geom_point(color = "blue", alpha = 0.6, size = 1.5) +  # Add transparency and adjust size
+  labs(
+    x = "Observed Heterozygosity Rate",
+    y = "Proportion of Missing SNPs",
+    title = "Observed Heterozygosity vs. Proportion of Missing SNPs"
+  ) +
+  geom_hline(yintercept = 0.97, linetype = "dashed", color = "red", size = 1) + # Adjust line type and size
+  geom_vline(xintercept = mean_het + 3 * sd_het, linetype = "dashed", color = "red", size = 1) +
+  geom_vline(xintercept = mean_het - 3 * sd_het, linetype = "dashed", color = "red", size = 1) +
+  annotate("text", x = mean_het + 3 * sd_het, y = max(QC1$F_MISS), label = "+3 SD", hjust = -0.1, color = "red") + # Add labels for lines
+  annotate("text", x = mean_het - 3 * sd_het, y = max(QC1$F_MISS), label = "-3 SD", hjust = 1.1, color = "red") +
+  annotate("text", x = min(QC1$het_rate), y = 0.03, label = "0.03 Threshold", vjust = -1, color = "red") +
+  theme_minimal() +  # Use a minimal theme for better aesthetics
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+
+```
+
+
+
+```{r}
+# Remove individuals from the dataset
+right_area = mean_het + 3*sd_het
+left_area =  mean_het - 3*sd_het
+```
+
+```{r}
+outliers = subset(QC1, QC1$het_rate > right_area | QC1$het_rate < left_area | QC1$F_MISS >= 0.97)
+
+# make a file to later remove FID & IID columns 
+write.table(outliers[,c(1,2)], file = "/Users/albacoto/Desktop/finalproject/wrong_het_missing.txt", col.names = F, row.names = F)
+```
+
+
+Identification of duplicated or related individuals
+```{r}
+ibd <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC2.genome', header = TRUE)
+members <- ibd$FID1
+members <- unique(members)
+```
+
+```{r}
+write.table(cbind(members,members), file = '/Users/albacoto/Desktop/finalproject/wrong_ibd.txt', col.names = F, row.names = F)
+```
+
+
+Visualization
+```{r}
+# Scatter plot of PI_HAT values
+ggplot(ibd, aes(x = PI_HAT, y = FID1)) +
+  geom_point(alpha = 0.7, color = "blue") +
+  labs(
+    title = "PI_HAT Values for Individual",
+    x = "PI_HAT Value",
+    y = "Individual (FID1)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+```
+
+```{r}
+# Plot the PI_HAT values
+ggplot(ibd, aes(x = PI_HAT)) +
+  geom_histogram(binwidth = 0.01, fill = "blue", color = "black", alpha = 0.7) +
+  labs(
+    title = "Distribution of PI_HAT Values",
+    x = "PI_HAT Value",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+
+```
+
+```{r}
+# Filter rows where PI_HAT is greater than or equal to 0.5 and select the first two columns
+ibd_filtered <- ibd %>%
+  filter(PI_HAT >= 0.5) %>%
+  select(1, 2) # Assuming the first two columns are the ones you need
+```
+
+```{r}
+# Write the filtered data to a text file
+write.table(ibd_filtered, "/Users/albacoto/Desktop/finalproject/ibd_filtered.txt", row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
+```
+
+
+
+SNPs with an excessive missing data rate
+```{r}
+missing_SNP = read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC3.lmiss', header = T)
+```
+
+```{r}
+# Create the histogram 
+ggplot(missing_SNP, aes(x = F_MISS)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black", alpha = 0.7) +
+  labs(
+    title = "Distribution of SNP Missing Data Rates",
+    x = "Missing Data Rate (F_MISS)",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  ) +
+  geom_density(aes(y = ..count.. * 0.01), color = "red", size = 1, adjust = 1) +
+  theme(
+    panel.grid.major = element_line(color = "gray", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+
+PCA
+```{r}
+pca <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC2.eigenvec', head = T)
+names(pca) <- c(c("FID", "IID"), paste(rep("PC", 20), seq(1,20), sep=""))
+```
+
+```{r}
+# Extract PC1 and PC2 from the 'pca' dataset
+PC1 <- pca$PC1
+PC2 <- pca$PC2
+
+# Create a scatter plot
+plot(PC1, PC2,
+     xlab = "PC1",
+     ylab = "PC2",
+     main = "Principal Component Analysis",
+     col = "skyblue")   
+```
+
+```{r}
+# Create the plot using ggplot2
+ggplot(pca, aes(x = PC1, y = PC2)) +
+  geom_point(alpha = 0.7, size = 2) +  # Adjust alpha and size for better visibility
+  labs(
+    x = "Principal Component 1 (PC1)",
+    y = "Principal Component 2 (PC2)",
+    title = "PCA Plot: PC1 vs PC2"
+  ) +
+  theme_minimal(base_size = 15) +  # Use a minimal theme with a larger base font size
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    axis.text = element_text(size = 12)
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +  # Add a dashed horizontal line at y = 0
+  geom_vline(xintercept = 0, linetype = "dashed", color = "grey")  # Add a dashed vertical line at x = 0
+
+```
+
+Variance with eigenvalues
+```{r}
+eigenvalues <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC2.eigenval', head = T)
+```
+
+
+```{r}
+# Compute the total variance
+total_variance <- sum(eigenvalues)
+
+# Compute the variance explained by each PC
+variance_explained <- eigenvalues / total_variance
+percentage_variance_explained <- variance_explained * 100
+
+# Percentage of variance explained by the first PC
+percentage_variance_explained[1]
+
+```
+
+```{r}
+pca_outlier <- pca %>% filter(PC1 > 0.95)
+
+#outliers saved for removal
+write.table(pca_outlier[,c(1,2)], 'pca_outlier.txt', col.names = FALSE, row.names = FALSE)
+```
+
+
+EYE COLOR
+```{r}
+eye_color <- read.table("/Users/albacoto/Desktop/finalproject/eye_color.txt", header=F)
+colnames(eye_color) <- c("IID", "Eye color")
+eye_color$pheno <- ifelse(grepl("brown|black", eye_color$'Eye color', ignore.case = TRUE), 1, 2)
+
+eye_color_id <- eye_color %>% mutate(FID = IID) %>% select("IID", "FID", "pheno")
+write.table(eye_color_id, 'eye_color_id.txt', col.names = FALSE, row.names = FALSE)
+```
+
+
+```{r}
+eye_color_summary <- as.data.frame(table(eye_color$"Eye color"))
+colnames(eye_color_summary) <- c("Eye color", "Count")
+eye_color_summary
+```
+
+
+Create a binary phenotype:
+```{r}
+# Get unique values in the "eye color" column
+unique_eye_colors <- unique(eye_color$"Eye color")
+print(unique_eye_colors)
+
+eye_color_counts <- table(eye_color$"Eye color")
+
+# Convert eye color counts to data frame for plotting
+eye_color_df <- data.frame(Eye_Color = names(eye_color_counts),
+                           Frequency = as.numeric(eye_color_counts))
+
+# Plot the bar plot with rotated x-axis labels and adjusted y-axis limits
+barplot(eye_color_df$Frequency, 
+        names.arg = eye_color_df$Eye_Color,
+        ylab = "Frequency",
+        main = "Distribution of Eye Colors",
+        col = "skyblue",        # Change color as needed
+        las = 2,                # Rotate x-axis labels by 90 degrees
+        ylim = c(0, 500),       # Set y-axis limits from 0 to 500
+        cex.names = 0.5)        # Adjust font size of axis labels if necessary
+
+```
+
+
+ADD THE PHENOTYPES
+```{r}
+phenotypes <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC4.fam', header = F)
+names(phenotypes) <- c("FID", "IID", "ID_father", "ID_mother", "sex", "pheno")
+
+PCA2 <- inner_join(phenotypes, pca)
+```
+
+```{r}
+#add pheno
+PCA3 <- merge(eye_color_id, PCA2, by = "IID", all.x = TRUE)
+```
+
+
+```{r}
+# Identify rows with NA values
+na_rows <- PCA3[!complete.cases(PCA3), ]
+
+# Save the IIDs of the rows with NA values to a text file
+write.table(na_rows[, c("FID.x", "IID")], "na_iids.txt", col.names = FALSE, row.names = FALSE, quote = FALSE)
+```
+
+
+```{r}
+# remove NA rows
+PCA3 <- PCA3 %>% filter(!is.na(PCA3$'FID.y'))
+```
+
+
+more PCA
+```{r}
+pca_filtered <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC5.eigenvec', head = T)
+names(pca_filtered) <- c(c("FID", "IID"), paste(rep("PC", 20), seq(1,20), sep=""))
+```
+
+```{r}
+# Select the specific columns from PCA3
+PCA3_selected <- PCA3 %>% select(IID, pheno.x, ID_father, ID_mother, sex)
+
+# Perform the inner join with pca_filtered on the common column FID
+pca_filtered2 <- inner_join(pca_filtered, PCA3_selected, by = "IID")
+```
+
+```{r}
+# Enhanced plot
+ggplot(pca_filtered2, aes(x = PC1, y = PC2, color = as.factor(pheno.x))) + 
+  geom_point(size = 3, alpha = 0.6) +  # Increase point size and set transparency
+  labs(x = "PC1", y = "PC2", color = "Eye Color") +  # Add axis labels
+  scale_color_manual(values = c("brown", "skyblue"), labels = c("Brown", "Blue")) +  # Define color palette and labels
+  theme_minimal() +  # Use a minimal theme for cleaner appearance
+  theme(
+    legend.position = "bottom",  # Position the legend at the bottom
+    legend.title = element_text(size = 12, face = "bold"),  # Adjust legend title appearance
+    legend.text = element_text(size = 10),  # Adjust legend text appearance
+    axis.text = element_text(size = 10),  # Adjust axis text size
+    axis.title = element_text(size = 12, face = "bold")  # Adjust axis title size and style
+  )
+
+```
+
+Variance
+```{r}
+eigenvalues2 <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC5.eigenval', head = F)
+names(eigenvalues2) <- c("Eigenvalues")
+```
+
+```{r}
+#variance explained by every PC
+variance_explained2 <- (eigenvalues2$Eigenvalues / sum(eigenvalues2$Eigenvalues)) * 100 
+```
+
+
+```{r}
+variance_explained2 <- data.frame(PC = seq_along(variance_explained2), Variance = variance_explained2)
+
+# plot of variance explained by PCs
+ggplot(variance_explained2, aes(x = PC, y = Variance)) +
+  geom_line(color = "blue", size = 1) +  # Set line color and size
+  geom_point(color = "red", size = 2) +  # Set point color and size
+  labs(
+    x = "Principal Component (PC)",
+    y = "Percentage of Variance Explained",
+    title = "Percentage of Variance Explained by Principal Component"
+  ) + 
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  # Center and style the title
+    axis.title.x = element_text(size = 14, face = "bold"),  # Style the x-axis title
+    axis.title.y = element_text(size = 14, face = "bold"),  # Style the y-axis title
+    axis.text = element_text(size = 12)  # Adjust axis text size
+  ) 
+
+```
+
+
+QC of SNPs
+```{r}
+missing2 = read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC5.lmiss', header = T)
+```
+
+
+```{r}
+ggplot(missing2, aes(x = F_MISS)) +
+  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black", alpha = 0.7) +
+  labs(
+    title = "Distribution of SNP Missing Data Rates",
+    x = "Missing Data Rate (F_MISS)",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  ) +
+  geom_density(aes(y = ..count.. * 0.01), color = "red", size = 1, adjust = 1) +
+  theme(
+    panel.grid.major = element_line(color = "gray", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank()
+  )
+```
+
+```{r}
+missing2 %>% filter(F_MISS >= 0.05) %>% nrow()
+```
+
+```{r}
+test_missing = read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC6.missing', header = TRUE)
+```
+
+```{r}
+fail_diffmiss_qc = test_missing[test_missing$P < 10e-5, 2]
+fail_diffmiss_qc 
+write.table(fail_diffmiss_qc, file = 'fail-diffmiss-qc.txt', row.names = F, col.names = F)
+```
+
+
+GWAS ASSOCIATION
+```{r}
+fisher <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC7.assoc.fisher', head = T)
+```
+
+
+```{r}
+#p-value and location of the most significant variant
+fisher[which.min(fisher$P),]$SNP
+min(fisher$P)
+fisher[which.min(fisher$P),]$BP
+fisher[which.min(fisher$P),]$CHR
+```
+
+```{r}
+#bonferroni correction
+bon <- 0.00001/nrow(fisher)
+bon
+#number of tests
+nrow(fisher)
+#test if any SNPs significant after bonferroni
+min(fisher$P) <= bon
+```
+
+
+```{r}
+library(qqman)
+manhattan(fisher)
+```
+
+```{r}
+qq(fisher$P)
+```
+
+
+GENOMIC CONTROL:
+```{r}
+fisher$ChiSq <- qchisq(fisher$P, df = 1, lower.tail = FALSE)
+```
+
+```{r}
+# INFLATION FACTOR
+lambda <- median(fisher$ChiSq) / qchisq(0.5, df = 1)
+print(lambda)  
+```
+
+```{r}
+#adjust chi-squared
+fisher$Adjusted_ChiSq <- fisher$ChiSq / lambda
+
+# convert chi back to p-values
+fisher$Adjusted_P <- pchisq(fisher$Adjusted_ChiSq, df = 1, lower.tail = FALSE)
+```
+
+```{r}
+# adjusted p-value of most significant marker
+most_significant_marker <- fisher[fisher$SNP == "rs4778241", ]
+adjusted_p_value <- most_significant_marker$Adjusted_P
+print(adjusted_p_value)
+```
+
+
+
+ADJUSTED
+```{r}
+fisher_adj <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC7.assoc.fisher.adjusted', head = T)
+
+fisher_adj_joined <- inner_join(fisher, fisher_adj)
+```
+
+
+```{r}
+# bonferri correction significance:
+min(fisher_adj$BONF)
+```
+
+
+```{r}
+# convert p-values to quantiles under Chi 
+gc_fish_joined <- fisher_adj_joined %>% 
+mutate(q = qchisq(P, df = 1, lower.tail = F))
+
+# medians for Chi
+exp_median <- qchisq(0.5, df = 1, lower.tail = F)
+exp_median
+
+obs_median <- median(gc_fish_joined$q)
+obs_median
+
+# Inflation factor 
+lamda <- obs_median/exp_median
+lamda
+```
+
+
+
+LOGISTIC
+```{r}
+pca_adj <- read.table('/Users/albacoto/Desktop/finalproject/adjust1pc.assoc.logistic', head = T)
+
+# p-values for SNPs (ADD) and for covariates (COV1); only use ADD
+pca_adj <- pca_adj %>% filter(TEST == 'ADD')
+pca_adj <- pca_adj %>%
+  filter(!is.na(P) & is.finite(P))
+```
+
+```{r}
+manhattan(pca_adj)
+```
+
+```{r}
+# Sort the data frame by p-value
+sorted_pca_adj <- pca_adj[order(pca_adj$P), ]
+
+# Get the top SNPs
+top_snps <- head(sorted_pca_adj, n = 20) 
+```
+
+
+```{r}
+#qq after PC adjustment
+qq(pca_adj$P)
+```
+
+```{r}
+#significant SNPs under bonferroni p-value treshold
+sign <- pca_adj %>% filter(pca_adj$P < bon)
+sign
+sign[which.min(sign$P),]$SNP
+```
+
+```{r}
+manhattan(subset(pca_adj, CHR == 15), highlight = sign$SNP, xlim = c(min(sign$BP) - 10000,
+    max(sign$BP) + 10000), main = "Chr 15", ylim = c(0,50))
+```
+
+```{r}
+#adjusted inflation factor, lamda value
+pca_adj <- pca_adj %>% 
+mutate(q = qchisq(P, df = 1, lower.tail = F))
+
+exp_median <- qchisq(0.5, df = 1, lower.tail = F)
+
+lamda2 <- median(pca_adj$q)/exp_median
+lamda2
+```
+
+
+
+FURTHER ANALYSIS:
+```{r}
+# Load the conditional association results
+fisher_conditioned <- read.table('/Users/albacoto/Desktop/finalproject/GWAS-QC7_condition.assoc.logistic', header = TRUE)
+```
+
+
+```{r}
+fisher_conditioned <- fisher_conditioned %>% filter(TEST == 'ADD')
+
+fisher_conditioned <- fisher_conditioned %>%
+  filter(!is.na(P) & is.finite(P))
+```
+```{r}
+manhattan(fisher_conditioned, ylim = c(0,21))
+```
+
+
+```{r}
+# QQ plot for the conditioned analysis
+qq(fisher_conditioned$P)
+```
+
+
+```{r}
+# Identify the new most significant SNP
+new_most_significant_snp <- fisher_conditioned[which.min(fisher_conditioned$P), ]
+print(new_most_significant_snp)
+
+```
+
+REGION OF MOST SIGNIFICANT SNP
+```{r}
+library(data.table)
+
+genotype_data <- fread("/Users/albacoto/Desktop/finalproject/significant_snp_window.raw")
+
+# Merge the genotype and phenotype data by the sample ID
+merged_data <- merge(genotype_data, eye_color_id, by = "IID")
+
+head(merged_data)
+```
+
+
+SNP: rs7179994_G
+```{r}
+# Summary statistics for the most significant SNP, excluding NAs
+summary_stats1 <- merged_data %>%
+  filter(!is.na(rs7179994_G) & !is.na(pheno)) %>%
+  group_by(rs7179994_G, pheno) %>%
+  summarise(count = n()) %>%
+  ungroup()
+```
+
+
+```{r}
+# Remove NAs for the plot
+filtered_data1 <- merged_data %>%
+  filter(!is.na(rs7179994_G) & !is.na(pheno))
+
+# Plot
+ggplot(filtered_data1, aes(x = as.factor(rs7179994_G), fill = as.factor(pheno))) +
+  geom_bar(position = "dodge", color = "black") +  # Adding a black border to bars
+  scale_fill_manual(values = c("1" = "brown", "2" = "skyblue"), 
+                    labels = c("1" = "Brown", "2" = "Blue")) +  # Custom colors and labels
+  labs(title = "Distribution of Eye Color by rs7179994_G Genotype",
+       x = "rs7179994_G Genotype",
+       y = "Count",
+       fill = "Eye Color") +
+  theme_minimal(base_size = 15) +  # Increase base font size for better readability
+  theme(plot.title = element_text(hjust = 0.5))  # Center align the title
+
+```
+
+SNP: rs7174027_A
+```{r}
+# Summary statistics for the most significant SNP, excluding NAs
+summary_stats2 <- merged_data %>%
+  filter(!is.na(rs7174027_A) & !is.na(pheno)) %>%
+  group_by(rs7174027_A, pheno) %>%
+  summarise(count = n()) %>%
+  ungroup()
+```
+
+
+```{r}
+# Remove NAs for the plot
+filtered_data2 <- merged_data %>%
+  filter(!is.na(rs7174027_A) & !is.na(pheno))
+
+# Plot
+ggplot(filtered_data2, aes(x = as.factor(rs7174027_A), fill = as.factor(pheno))) +
+  geom_bar(position = "dodge", color = "black") +  # Adding a black border to bars
+  scale_fill_manual(values = c("1" = "brown", "2" = "skyblue"), 
+                    labels = c("1" = "Brown", "2" = "Blue")) +  # Custom colors and labels
+  labs(title = "Distribution of Eye Color by rs7174027_A Genotype",
+       x = "rs7174027_A Genotype",
+       y = "Count",
+       fill = "Eye Color") +
+  theme_minimal(base_size = 15) +  # Increase base font size for better readability
+  theme(plot.title = element_text(hjust = 0.5))  # Center align the title
+
+```
+
+SNP: rs4778241_A
+```{r}
+# Summary statistics for the most significant SNP, excluding NAs
+summary_stats3 <- merged_data %>%
+  filter(!is.na(rs4778241_A) & !is.na(pheno)) %>%
+  group_by(rs4778241_A, pheno) %>%
+  summarise(count = n()) %>%
+  ungroup()
+```
+
+
+```{r}
+# Remove NAs for the plot
+filtered_data3 <- merged_data %>%
+  filter(!is.na(rs4778241_A) & !is.na(pheno))
+
+# Plot
+ggplot(filtered_data3, aes(x = as.factor(rs4778241_A), fill = as.factor(pheno))) +
+  geom_bar(position = "dodge", color = "black") +  # Adding a black border to bars
+  scale_fill_manual(values = c("1" = "brown", "2" = "skyblue"), 
+                    labels = c("1" = "Brown", "2" = "Blue")) +  # Custom colors and labels
+  labs(title = "Distribution of Eye Color by rs4778241_A Genotype",
+       x = "rs4778241_A Genotype",
+       y = "Count",
+       fill = "Eye Color") +
+  theme_minimal(base_size = 15) +  # Increase base font size for better readability
+  theme(plot.title = element_text(hjust = 0.5))  # Center align the title
+
+```
+
+SNP: rs7495174_G
+```{r}
+# Summary statistics for the most significant SNP, excluding NAs
+summary_stats4 <- merged_data %>%
+  filter(!is.na(rs7495174_G) & !is.na(pheno)) %>%
+  group_by(rs7495174_G, pheno) %>%
+  summarise(count = n()) %>%
+  ungroup()
+```
+
+
+```{r}
+# Remove NAs for the plot
+filtered_data4 <- merged_data %>%
+  filter(!is.na(rs7495174_G) & !is.na(pheno))
+
+# Plot
+ggplot(filtered_data4, aes(x = as.factor(rs7495174_G), fill = as.factor(pheno))) +
+  geom_bar(position = "dodge", color = "black") +  # Adding a black border to bars
+  scale_fill_manual(values = c("1" = "brown", "2" = "skyblue"), 
+                    labels = c("1" = "Brown", "2" = "Blue")) +  # Custom colors and labels
+  labs(title = "Distribution of Eye Color by rs7495174_G Genotype",
+       x = "rs7495174_G Genotype",
+       y = "Count",
+       fill = "Eye Color") +
+  theme_minimal(base_size = 15) +  # Increase base font size for better readability
+  theme(plot.title = element_text(hjust = 0.5))  # Center align the title
+
+```
+
+
+```{r}
+# Extract relevant columns: IID, phenotype, and the most significant SNP genotype
+# Assuming the SNP column is named "rs4778241_A" and "rs4778241_B" for alleles A and B
+relevant_data <- merged_data %>%
+  select(IID, phenotype, rs4778241_A, rs7179994_G)
+
+# Create a new column for the genotype combination (e.g., AA, AB, BB)
+relevant_data <- relevant_data %>%
+  mutate(genotype = paste0(rs4778241_A, "/", rs4778241_B))
+
+# Summarize the distribution of phenotypes for each genotype
+phenotype_distribution <- relevant_data %>%
+  group_by(genotype, phenotype) %>%
+  summarise(count = n())
+
+print(phenotype_distribution)
+
+# Plot the distribution using ggplot2
+ggplot(phenotype_distribution, aes(x = genotype, y = count, fill = phenotype)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Distribution of Phenotypes for Each Genotype at rs4778241",
+       x = "Genotype at rs4778241",
+       y = "Count",
+       fill = "Phenotype") +
+  theme_minimal()
+
+```
+
+
+
+
+
+
